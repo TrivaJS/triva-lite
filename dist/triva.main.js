@@ -13,6 +13,8 @@ class MiddlewareCore {
 
   handle(req, res, next) {
 
+    // Security Review (IP Comp, bot, ai, crawler review)
+
     if (typeof next === "function") {
       next();
     }
@@ -23,9 +25,8 @@ class MiddlewareCore {
   }
 
   processSnapshot(req, res) {
-    // Placeholder for logging / analytics / security review
+    // Placeholder for logging / analytics
     // MUST be fast & non-blocking
-    // No access to req / res here
   }
 }
 
