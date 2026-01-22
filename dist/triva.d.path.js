@@ -1,3 +1,11 @@
+/*!
+ * Triva
+ * Copyright (c) 2026 Kris Powers
+ * License MIT
+ */
+
+'use strict';
+
 function getByPath(obj, path) {
   return path.split(".").reduce((o, k) => (o ? o[k] : undefined), obj);
 }

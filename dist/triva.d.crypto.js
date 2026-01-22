@@ -1,3 +1,11 @@
+/*!
+ * Triva
+ * Copyright (c) 2026 Kris Powers
+ * License MIT
+ */
+
+'use strict';
+
 const crypto = require("crypto");
 
 const ALGO = "aes-256-gcm";

@@ -1,9 +1,9 @@
 /*!
  * Triva
  * Copyright (c) 2026 Kris Powers
- * MIT Licensed
+ * License MIT
  */
 
 'use strict';
 
-module.exports = require('./lib/triva.main');
+module.exports = require('./dist/triva.main');

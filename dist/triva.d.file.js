@@ -1,3 +1,11 @@
+/*!
+ * Triva
+ * Copyright (c) 2026 Kris Powers
+ * License MIT
+ */
+
+'use strict';
+
 const fs = require("fs/promises");
 const path = require("path");
 
