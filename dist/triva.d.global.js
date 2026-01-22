@@ -1,12 +1,20 @@
+/*!
+ * Triva
+ * Copyright (c) 2026 Kris Powers
+ * License MIT
+ */
+
+'use strict';
+
 const crypto = require("crypto");
-const { readFile, writeFile } = require("./file");
-const { encrypt, decrypt } = require("./crypto");
-const { encryptMasterKey, decryptMasterKey } = require("./masterKey");
+const { readFile, writeFile } = require("./triva.d.file");
+const { encrypt, decrypt } = require("./triva.d.crypto");
+const { encryptMasterKey, decryptMasterKey } = require("./triva.d.masterkey");
 const {
   getByPath,
   setByPath,
   deleteByPath
-} = require("./path");
+} = require("./triva.d.path");
 
 class SecureStore {
   constructor(options = {}) {
