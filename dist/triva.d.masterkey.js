@@ -6,8 +6,8 @@
 
 'use strict';
 
-const crypto = require("crypto");
-const os = require("os");
+import crypto from "crypto";
+import os from "os";
 
 const ALGO = "aes-256-gcm";
 
@@ -53,8 +53,10 @@ function decryptMasterKey(payload) {
   ]);
 }
 
-module.exports = {
-  generateMasterKey: () => crypto.randomBytes(32),
+  const generateMasterKey = () => crypto.randomBytes(32);
+
+export {
+  generateMasterKey,
   encryptMasterKey,
   decryptMasterKey
-};
+}

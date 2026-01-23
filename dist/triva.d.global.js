@@ -6,15 +6,15 @@
 
 'use strict';
 
-const crypto = require("crypto");
-const { readFile, writeFile } = require("./triva.d.file");
-const { encrypt, decrypt } = require("./triva.d.crypto");
-const { encryptMasterKey, decryptMasterKey } = require("./triva.d.masterkey");
-const {
+import crypto from "crypto";  // Node v22+ supports this
+import { readFile, writeFile } from './triva.d.file.js';
+import { encrypt, decrypt } from './triva.d.crypto.js';
+import { encryptMasterKey, decryptMasterKey } from './triva.d.masterkey.js';
+import {
   getByPath,
   setByPath,
   deleteByPath
-} = require("./triva.d.path");
+} from './triva.d.path.js';
 
 class SecureStore {
   constructor(options = {}) {
@@ -151,4 +151,4 @@ class SecureStore {
   }
 }
 
-module.exports = { SecureStore };
+export { SecureStore };
