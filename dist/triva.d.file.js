@@ -6,8 +6,8 @@
 
 'use strict';
 
-const fs = require("fs/promises");
-const path = require("path");
+import fs from "fs/promises";
+import path from "path";
 
 async function readFile(file) {
   try {
@@ -22,4 +22,4 @@ async function writeFile(file, data) {
   await fs.writeFile(file, data);
 }
 
-module.exports = { readFile, writeFile };
+export { readFile, writeFile };

@@ -6,7 +6,7 @@
 
 'use strict';
 
-const crypto = require("crypto");
+import crypto from "crypto";  // Node v22+ supports this
 
 const ALGO = "aes-256-gcm";
 const IV_LENGTH = 12;
@@ -43,4 +43,4 @@ function decrypt(payload, key) {
   ]).toString("utf8");
 }
 
-module.exports = { encrypt, decrypt };
+export { encrypt, decrypt };

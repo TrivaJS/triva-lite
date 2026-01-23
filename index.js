@@ -6,4 +6,4 @@
 
 'use strict';
 
-module.exports = require('./dist/triva.main');
+export { createMiddleware } from './dist/triva.main.js';

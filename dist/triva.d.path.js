@@ -36,7 +36,7 @@ function deleteByPath(obj, path) {
   return delete curr[keys[keys.length - 1]];
 }
 
-module.exports = {
+export {
   getByPath,
   setByPath,
   deleteByPath
