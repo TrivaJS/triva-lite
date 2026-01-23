@@ -6,6 +6,6 @@
 
 'use strict';
 
-import { SecureStore } from "./triva.d.global.js";
+import { SecureStore } from "./triva.db.global.js";
 
 export const db = new SecureStore({});

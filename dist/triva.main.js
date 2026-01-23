@@ -6,7 +6,7 @@
 
 'use strict';
 
-import { db } from './triva.d.js'
+import { db } from './triva.db.js'
 import { build } from './triva.build.js';
 
 class MiddlewareCore {
@@ -68,6 +68,7 @@ class MiddlewareCore {
     // Placeholder for logging / analytics
     // MUST be fast & non-blocking
   }
+
 }
 
 function createMiddleware(options = {}) {

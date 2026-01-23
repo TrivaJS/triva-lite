@@ -7,14 +7,137 @@
 'use strict';
 
 import crypto from "crypto";  // Node v22+ supports this
-import { readFile, writeFile } from './triva.d.file.js';
-import { encrypt, decrypt } from './triva.d.crypto.js';
-import { encryptMasterKey, decryptMasterKey } from './triva.d.masterkey.js';
-import {
-  getByPath,
-  setByPath,
-  deleteByPath
-} from './triva.d.path.js';
+import fs from "fs/promises";
+import path from "path";
+import os from "os";
+
+// File Management
+async function readFile(file) {
+  try {
+    return await fs.readFile(file, "utf8");
+  } catch {
+    return null;
+  }
+}
+
+async function writeFile(file, data) {
+  await fs.mkdir(path.dirname(file), { recursive: true });
+  await fs.writeFile(file, data);
+}
+
+// Crypto
+const ALGO = "aes-256-gcm";
+const IV_LENGTH = 12;
+
+function encrypt(text, key) {
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv(ALGO, key, iv);
+
+  const encrypted = Buffer.concat([
+    cipher.update(text, "utf8"),
+    cipher.final()
+  ]);
+
+  return Buffer.concat([
+    iv,
+    cipher.getAuthTag(),
+    encrypted
+  ]).toString("base64");
+}
+
+function decrypt(payload, key) {
+  const buffer = Buffer.from(payload, "base64");
+
+  const iv = buffer.subarray(0, 12);
+  const tag = buffer.subarray(12, 28);
+  const encrypted = buffer.subarray(28);
+
+  const decipher = crypto.createDecipheriv(ALGO, key, iv);
+  decipher.setAuthTag(tag);
+
+  return Buffer.concat([
+    decipher.update(encrypted),
+    decipher.final()
+  ]).toString("utf8");
+}
+
+// Master Key
+function getMachineKey() {
+  const fingerprint = [
+    os.hostname(),
+    os.platform(),
+    os.arch()
+  ].join("|");
+
+  return crypto.scryptSync(fingerprint, "secure-store", 32);
+}
+
+function encryptMasterKey(masterKey) {
+  const iv = crypto.randomBytes(12);
+  const key = getMachineKey();
+
+  const cipher = crypto.createCipheriv(ALGO, key, iv);
+  const encrypted = Buffer.concat([
+    cipher.update(masterKey),
+    cipher.final()
+  ]);
+
+  return {
+    iv: iv.toString("base64"),
+    tag: cipher.getAuthTag().toString("base64"),
+    data: encrypted.toString("base64")
+  };
+}
+
+function decryptMasterKey(payload) {
+  const key = getMachineKey();
+  const iv = Buffer.from(payload.iv, "base64");
+  const tag = Buffer.from(payload.tag, "base64");
+  const encrypted = Buffer.from(payload.data, "base64");
+
+  const decipher = crypto.createDecipheriv(ALGO, key, iv);
+  decipher.setAuthTag(tag);
+
+  return Buffer.concat([
+    decipher.update(encrypted),
+    decipher.final()
+  ]);
+}
+
+const generateMasterKey = () => crypto.randomBytes(32);
+
+// Path
+function getByPath(obj, path) {
+  return path.split(".").reduce((o, k) => (o ? o[k] : undefined), obj);
+}
+
+function setByPath(obj, path, value) {
+  const keys = path.split(".");
+  let curr = obj;
+
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (typeof curr[keys[i]] !== "object" || curr[keys[i]] === null) {
+      curr[keys[i]] = {};
+    }
+    curr = curr[keys[i]];
+  }
+
+  curr[keys[keys.length - 1]] = value;
+}
+
+function deleteByPath(obj, path) {
+  const keys = path.split(".");
+  let curr = obj;
+
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (!curr[keys[i]]) return false;
+    curr = curr[keys[i]];
+  }
+
+  return delete curr[keys[keys.length - 1]];
+}
+
+// Old
 
 class SecureStore {
   constructor(options = {}) {

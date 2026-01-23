@@ -1,4 +1,4 @@
-import { db } from "./triva.d.js";
+import { db } from "./triva.db.js";
 
 /**
  * Set's up the backend functionality.
@@ -15,7 +15,7 @@ export async function build(dashboard_port) {
         dashboard_port: dashboard_port, 
         setup_complete: true, 
     }).then( async () => {
-
+        // Build Analytics
     })
     //await db.set('analytics', config.analytics)
 
