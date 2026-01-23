@@ -1,4 +1,4 @@
-import { createMiddleware } from '../../index.js';
+import { createMiddleware } from '../index.js';
 import express from 'express';
 
 const middleware = createMiddleware({})
