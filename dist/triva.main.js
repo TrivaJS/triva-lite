@@ -7,48 +7,81 @@
 'use strict';
 
 import { log } from "./triva.log.js";
+import Throttle from "./triva.throttle.js";
 
 class MiddlewareCore {
   constructor(options = {}) {
     this.options = options;
+
+    // Initialize throttle if enabled
+    if (options.throttle) {
+      this.throttle = new Throttle(options.throttle);
+    }
   }
 
-  handle(req, res, next) {
+  async handle(req, res, next) {
+    try {
+      /* ---------------- Throttle Intercept ---------------- */
 
-    // Security Review (IP Comp, bot, ai, crawler review)
+      if (this.throttle) {
+        const ip =
+          req.socket?.remoteAddress ||
+          req.connection?.remoteAddress;
 
-    if (typeof next === "function") {
-      next();
+        const ua = req.headers['user-agent'];
+
+        const result = await this.throttle.check(ip, ua);
+
+        // Attach snapshot for logging / downstream usage
+        req.triva = req.triva || {};
+        req.triva.throttle = result;
+
+        if (result.restricted) {
+          res.statusCode = 429;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(
+            JSON.stringify({
+              error: 'throttled',
+              reason: result.reason
+            })
+          );
+          return;
+        }
+      }
+
+      /* ---------------- Continue Pipeline ---------------- */
+
+      if (typeof next === "function") {
+        next();
+      }
+
+      // Non-blocking snapshot
+      queueMicrotask(() => {
+        this.processSnapshot(req, res);
+      });
+
+    } catch (err) {
+      if (typeof next === "function") {
+        return next(err);
+      }
+      throw err;
     }
-
-    queueMicrotask(() => {
-      this.processSnapshot(req, res);
-    });
   }
 
   processSnapshot(req, res) {
-    this.buildLog(req, res)
+    this.buildLog(req, res);
   }
 
   async buildLog(req, res) {
-    console.log('test')
     await log.push(req, res);
-    return;
   }
-
 }
 
 function createMiddleware(options = {}) {
   const core = new MiddlewareCore(options);
 
   return function middleware(req, res, next) {
-    try {
-      core.handle(req, res, next);
-    } catch (err) {
-      if (typeof next === "function") {
-        return next(err);
-      }
-    }
+    core.handle(req, res, next);
   };
 }
 

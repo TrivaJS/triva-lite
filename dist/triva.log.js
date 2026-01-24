@@ -1,5 +1,5 @@
 import { db } from "./triva.db.js";
-import { parseUA } from '@triva/ua-parser';
+import { parseUA } from '@trivajs/ua-parser';
 
 export const log = {
 
