@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Triva — Useage</title>
+    <!-- Icons (Lucide via CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"> <span class="logo">Dashboard</span> </div>
+        <nav class="nav"> 
+            <a href="./index.html" class="nav-item" data-page="overview"> 
+            <i data-lucide="panels-top-left"></i> 
+            <span>Overview</span> 
+            </a> 
+            <a href="./install.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="square-terminal"></i> 
+            <span>Installation</span> 
+            </a> 
+            <a href="./_" class="nav-item active" data-page="docs"> 
+            <i data-lucide="braces"></i> 
+            <span>Useage</span> 
+            </a> 
+            <a href="./_" class="nav-item" data-page="docs"> 
+            <i data-lucide="database"></i> 
+            <span>Examples</span> 
+            </a> 
+            <a href="./_" class="nav-item" data-page="docs"> 
+            <i data-lucide="bug"></i> 
+            <span>Bugs</span> 
+            </a> 
+            <a href="./_" class="nav-item-heart" data-page="docs"> 
+            <i data-lucide="heart-handshake"></i> 
+            <span>Contribute</span> 
+            </a> 
+        </nav>
+    </aside>
+
+    <main>
+    <h1>Usage</h1>
+
+    <p>
+        Triva is designed to be framework-agnostic. The same middleware instance can be
+        used with Express, Fastify, or the native Node.js HTTP server. Behavior is consistent
+        across environments.
+    </p>
+
+    <h2>Express</h2>
+
+    <p>
+        Express applications attach Triva as standard middleware. Triva runs early in the
+        request lifecycle and may short-circuit requests when limits are exceeded.
+    </p>
+
+    <pre><code>import express from 'express';
+import { createMiddleware } from 'triva';
+
+const app = express();
+const middleware = new createMiddleware({ parser: true });
+
+app.use(middleware);
+
+app.get('/', (req, res) => {
+    res.json({
+        throttle: req.triva.throttle,
+        parsed: req.triva.parsed
+    });
+});
+
+app.listen(3000);</code></pre>
+
+    <h2>Fastify</h2>
+
+    <p>
+        Fastify integrations use request hooks. Triva operates synchronously and does not
+        rely on Fastify-specific APIs.
+    </p>
+
+    <pre><code>import Fastify from 'fastify';
+import { createMiddleware } from 'triva';
+
+const fastify = Fastify();
+const middleware = new createMiddleware({ throttle: { limit: 1000 } });
+
+fastify.addHook('onRequest', middleware);
+
+fastify.get('/', async (req, reply) => {
+    return req.triva;
+ });
+
+fastify.listen({ port: 3000 });</code></pre>
+
+    <h2>Node.js HTTP Server</h2>
+
+    <p>
+        Triva works directly with the Node.js HTTP module without adapters or wrappers.
+    </p>
+
+    <pre><code>import http from 'http';
+import { createMiddleware } from 'triva';
+
+const middleware = new createMiddleware();
+
+const server = http.createServer((req, res) => {
+    middleware(req, res, () => {
+        res.end(JSON.stringify(req.triva));
+    });
+});
+
+server.listen(3000);</code></pre>
+
+    <h2>Accessing Runtime Metadata</h2>
+
+    <p>
+        All runtime decisions are exposed on the request object:
+    </p>
+
+    <pre><code>req.triva = {
+    throttle: { restricted, reason },
+    parsed: { os, browser, device, bot },
+    timing: { received_at }
+};</code></pre>
+
+    <p>
+        This data is safe to log, expose to clients, or feed into analytics pipelines.
+    </p>
+
+    </main>
+
+    <script>lucide.createIcons();</script>
+
+</body>
+</html>

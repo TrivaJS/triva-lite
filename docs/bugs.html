@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Triva — Bugs</title>
+    <!-- Icons (Lucide via CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"> <span class="logo">Dashboard</span> </div>
+        <nav class="nav"> 
+            <a href="./index.html" class="nav-item" data-page="overview"> 
+            <i data-lucide="panels-top-left"></i> 
+            <span>Overview</span> 
+            </a> 
+            <a href="./install.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="square-terminal"></i> 
+            <span>Installation</span> 
+            </a> 
+            <a href="./_" class="nav-item" data-page="docs"> 
+            <i data-lucide="braces"></i> 
+            <span>Useage</span> 
+            </a> 
+            <a href="./_" class="nav-item" data-page="docs"> 
+            <i data-lucide="database"></i> 
+            <span>Examples</span> 
+            </a> 
+            <a href="./_" class="nav-item active" data-page="docs"> 
+            <i data-lucide="bug"></i> 
+            <span>Bugs</span> 
+            </a> 
+            <a href="./_" class="nav-item-heart" data-page="docs"> 
+            <i data-lucide="heart-handshake"></i> 
+            <span>Contribute</span> 
+            </a> 
+        </nav>
+    </aside>
+
+    <main>
+    <h1>Reporting Bugs</h1>
+
+    <p>
+        Triva is used in real-world production environments, and correctness matters.
+        Bug reports are treated as first-class contributions.
+    </p>
+
+    <h2>What to Report</h2>
+
+    <ul>
+        <li>Incorrect throttling behavior</li>
+        <li>Unexpected rate limit enforcement</li>
+        <li>Parser inaccuracies</li>
+        <li>Log inconsistencies or corruption</li>
+        <li>Performance regressions</li>
+    </ul>
+
+    <h2>How to Report</h2>
+
+    <p>
+        Please include:
+    </p>
+
+    <ul>
+        <li>Node.js version</li>
+        <li>Framework (Express, Fastify, native)</li>
+        <li>Configuration used</li>
+        <li>Minimal reproduction if possible</li>
+    </ul>
+
+    <h2>Call to Action</h2>
+
+    <p>
+        If you encounter unexpected behavior, open an issue on GitHub. Clear bug reports
+        directly improve the reliability of the ecosystem for everyone.
+    </p>
+    </main>
+
+    <script>lucide.createIcons();</script>
+
+</body>
+</html>
