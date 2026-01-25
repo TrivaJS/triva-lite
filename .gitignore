@@ -1,2 +1,5 @@
-/test/build/node_modules
-test/build/package.json
+/test/node_modules
+test/package.json
+test/triva.db
+/node_modules
+package-lock.json

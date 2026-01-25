@@ -1,14 +1,22 @@
-import { db } from "./triva.d";
+import { db } from "./triva.db.js";
+import { parseUA } from '@trivajs/ua-parser';
 
-export async function event_log(req, res) {
+export const log = {
 
-    await db.add('analytics.requests.all', 1) // Requests - All traffic
+    async push(req, res) {
 
-    const logID = await db.get("loast_logID").then( async () => {
-        await db.add('loast_logID', 1)
-    })
+        // ---- User Agent Parsing ----
+        const data = parseUA(req.headers["user-agent"])
+        console.log(data)
 
-    async function create_log(){
+        // Analytics
+
+        // Log ID
+        const logID = await db.get("loast_logID").then( async () => {
+            await db.add('loast_logID', 1)
+        })
+
+        async function create_log(){
         const logEntry = {
             id: logID+1,
             time: new Date().toLocaleString(),
@@ -25,5 +33,19 @@ export async function event_log(req, res) {
     }
 
     await create_log() // Requires rework with automatic redirect development - Very early log setup
+
+    },
+    
+    async get(id) {
+
+    },
+    
+    async remove(id) {
+
+    },
+
+    async filter() {
+
+    }
 
 }

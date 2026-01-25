@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Triva — Overview</title>
+    <!-- Icons (Lucide via CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"> <span class="logo">Dashboard</span> </div>
+        <nav class="nav"> 
+            <a href="./index.html" class="nav-item active" data-page="overview"> 
+            <i data-lucide="panels-top-left"></i> 
+            <span>Overview</span> 
+            </a> 
+            <a href="./install.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="square-terminal"></i> 
+            <span>Installation</span> 
+            </a> 
+            <a href="./usage.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="braces"></i> 
+            <span>Useage</span> 
+            </a> 
+            <a href="./examples.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="database"></i> 
+            <span>Examples</span> 
+            </a> 
+            <a href="./bugs.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="bug"></i> 
+            <span>Bugs</span> 
+            </a> 
+            <a href="./contribute.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="heart-handshake"></i> 
+            <span>Contribute</span> 
+            </a> 
+        </nav>
+    </aside>
+
+<main>
+<h1>Triva Overview</h1>
+
+<p><strong>Triva</strong> is a developer-centric toolkit designed to provide robust request/event logging and intelligent middleware controls for modern web applications. It is built with enterprise and OSS standards in mind, supporting SOC2 / ISO-compliant principles.</p>
+
+<h2>Package Components</h2>
+<p>The Triva package provides two core resources for developers:</p>
+<ul>
+<li><strong>Request/Event Logs:</strong> Locally cached, structured logs capturing every request, middleware decision, and environment metadata. Fully queryable and filterable for monitoring, analytics, and compliance.</li>
+<li><strong>Middleware:</strong> Includes behavior-aware <em>Throttle</em>, request <em>Parser</em>, and <em>Rate Limiter</em>. Controls request flow, protects APIs, and attaches metadata to logs.</li>
+</ul>
+
+<h2>Use Cases</h2>
+<p>Triva is ideal for:</p>
+<ul>
+<li>Public APIs: Protect against scraping, credential stuffing, and accidental overload.</li>
+<li>Enterprise Dashboards: Handle bursty UI requests and refresh patterns without blocking legitimate users.</li>
+<li>Mixed Human/Bot traffic: Differentially rate-limit known bots and AI crawlers while maintaining fair access for users.</li>
+<li>Tiered Applications: Configure policies per account level for free, paid, or enterprise clients.</li>
+</ul>
+
+<h2>Getting Started</h2>
+<p>To begin using Triva, install the package, integrate middleware, and optionally configure the logs system. See <a href="/install.html">Install</a> for detailed setup instructions.</p>
+
+<h2>Developer Philosophy</h2>
+<p>Triva emphasizes determinism, transparency, and storage-agnostic operation. It never relies on timers or background jobs. All request decisions are attached to <code>req.triva</code> for inspection and auditing.</p>
+</main>
+</body>
+<script>lucide.createIcons();</script>
+</html>

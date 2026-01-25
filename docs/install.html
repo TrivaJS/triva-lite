@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Triva — Install</title>
+    <!-- Icons (Lucide via CDN) -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header"> <span class="logo">Dashboard</span> </div>
+        <nav class="nav"> 
+            <a href="./index.html" class="nav-item" data-page="overview"> 
+            <i data-lucide="panels-top-left"></i> 
+            <span>Overview</span> 
+            </a> 
+            <a href="./install.html" class="nav-item active" data-page="docs"> 
+            <i data-lucide="square-terminal"></i> 
+            <span>Installation</span> 
+            </a> 
+            <a href="./usage.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="braces"></i> 
+            <span>Useage</span> 
+            </a> 
+            <a href="./examples.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="database"></i> 
+            <span>Examples</span> 
+            </a> 
+            <a href="./bugs.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="bug"></i> 
+            <span>Bugs</span> 
+            </a> 
+            <a href="./contribute.html" class="nav-item" data-page="docs"> 
+            <i data-lucide="heart-handshake"></i> 
+            <span>Contribute</span> 
+            </a> 
+        </nav>
+    </aside>
+
+    <main>
+    <h1>Installation</h1>
+
+    <p>
+        Triva is distributed as a standard Node.js package and is designed to integrate
+        cleanly into existing HTTP servers and frameworks. There is no global initialization
+        step, no background services, and no required external dependencies.
+    </p>
+
+    <h2>Installing the Package</h2>
+
+    <p>
+        Install Triva using your package manager of choice:
+    </p>
+
+    <pre><code>npm install triva
+# or
+yarn add triva</code></pre>
+
+    <h2>Importing Triva</h2>
+
+    <p>
+        Triva exposes a small, intentional API surface. Most applications will only need
+        the middleware factory and the logs interface.
+    </p>
+
+    <pre><code>import { createMiddleware, logs } from 'triva';</code></pre>
+
+    <h2>Creating the Middleware</h2>
+
+    <p>
+        All configuration happens at middleware creation time. This includes throttling,
+        parsing, rate limiting, and logging behavior. Once created, the middleware is a
+        pure function that can be attached to any compatible HTTP server.
+    </p>
+
+    <pre><code>const middleware = createMiddleware({
+    throttle: {
+        limit: 1500,
+        window_ms: 24 * 60 * 60 * 1000,
+        burst_limit: 25,
+        burst_window_ms: 1000
+    },
+    parser: true
+});</code></pre>
+
+    <h2>What Happens After Installation</h2>
+
+    <p>
+        Once attached, Triva automatically:
+    </p>
+
+    <ul>
+        <li>Evaluates request behavior for throttling and rate limiting</li>
+        <li>Parses request metadata (UA, engine, OS, device, bot/AI indicators)</li>
+        <li>Generates structured request and event logs</li>
+        <li>Attaches decision metadata to <code>req.triva</code></li>
+    </ul>
+
+    <p>
+        No additional setup is required to begin logging or enforcing limits.
+    </p>
+    </main>
+
+    <script>lucide.createIcons();</script>
+
+</body>
+</html>

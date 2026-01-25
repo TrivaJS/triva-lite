@@ -6,67 +6,74 @@
 
 'use strict';
 
-import { db } from './triva.d.js'
-import { build } from './triva.build.js';
+import { log } from "./triva.log.js";
+import Throttle from "./triva.throttle.js";
 
 class MiddlewareCore {
   constructor(options = {}) {
     this.options = options;
-    this.port = options.port || "6850"; // Port Configuration
 
-    // Init Timeout
-    this.isInitialized = false;
-    this.initPromise = this.initialize();
-        
-    this.ready = this._init();
+    // Initialize throttle if enabled
+    if (options.throttle) {
+      this.throttle = new Throttle(options.throttle);
+    }
   }
 
-  /**
-   * Initializes the config
-   * 
-   * @private
-   */
-
-  async _init() {
+  async handle(req, res, next) {
     try {
-      if (await db.get('config.setup_complete')) {
-        return;
-      } else {
-        await build(this.port);
-        return;
+      /* ---------------- Throttle Intercept ---------------- */
+
+      if (this.throttle) {
+        const ip =
+          req.socket?.remoteAddress ||
+          req.connection?.remoteAddress;
+
+        const ua = req.headers['user-agent'];
+
+        const result = await this.throttle.check(ip, ua);
+
+        // Attach snapshot for logging / downstream usage
+        req.triva = req.triva || {};
+        req.triva.throttle = result;
+
+        if (result.restricted) {
+          res.statusCode = 429;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(
+            JSON.stringify({
+              error: 'throttled',
+              reason: result.reason
+            })
+          );
+          return;
+        }
       }
-    } catch {
-      await build(this.port);
-      return;
+
+      /* ---------------- Continue Pipeline ---------------- */
+
+      if (typeof next === "function") {
+        next();
+      }
+
+      // Non-blocking snapshot
+      queueMicrotask(() => {
+        this.processSnapshot(req, res);
+      });
+
+    } catch (err) {
+      if (typeof next === "function") {
+        return next(err);
+      }
+      throw err;
     }
-  }
-
-  /**
-   * @return {boolean} Delays Public API use until configuration
-   * @private
-   */
-
-  async initialize() {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    this.isInitialized = true;
-  }
-
-  handle(req, res, next) {
-
-    // Security Review (IP Comp, bot, ai, crawler review)
-
-    if (typeof next === "function") {
-      next();
-    }
-
-    queueMicrotask(() => {
-      this.processSnapshot(req, res);
-    });
   }
 
   processSnapshot(req, res) {
-    // Placeholder for logging / analytics
-    // MUST be fast & non-blocking
+    this.buildLog(req, res);
+  }
+
+  async buildLog(req, res) {
+    await log.push(req, res);
   }
 }
 
@@ -74,13 +81,7 @@ function createMiddleware(options = {}) {
   const core = new MiddlewareCore(options);
 
   return function middleware(req, res, next) {
-    try {
-      core.handle(req, res, next);
-    } catch (err) {
-      if (typeof next === "function") {
-        return next(err);
-      }
-    }
+    core.handle(req, res, next);
   };
 }
 
