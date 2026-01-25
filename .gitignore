@@ -3,3 +3,11 @@
 /test/node_modules
 package-lock.json
 test/package.json
+/examples/express/node_modules
+/examples/fastify/node_modules
+examples/fastify/package.json
+examples/express/package.json
+/examples/logs/node_modules
+/examples/node-http/node_modules
+examples/node-http/package.json
+examples/logs/package.json

@@ -20,31 +20,3 @@ const middleware = new createMiddleware({
 });
 
 app.use(middleware);
-
-/* ---------------- Test Routes ---------------- */
-
-app.get("/", (req, res) => {
-  res.json({
-    ok: true,
-    message: "Request allowed",
-    rateLimit: req.triva?.rateLimit
-  });
-});
-
-app.get("/slow", async (req, res) => {
-  await new Promise(r => setTimeout(r, 500));
-  res.send("Slow response OK");
-});
-
-/* ---------------- Error Handler ---------------- */
-
-app.use((err, req, res, next) => {
-  console.error("Express error:", err);
-  res.status(500).json({ error: "internal_error" });
-});
-
-/* ---------------- Start Server ---------------- */
-
-app.listen(3000, () => {
-  console.log("Express test server running on http://localhost:3000");
-});

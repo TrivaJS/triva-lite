@@ -1,5 +1,6 @@
 import { db } from "./triva.db.js";
 import { parseUA } from "@trivajs/ua-parser";
+import { query } from "./triva.log.query.js";
 
 let retentionPolicy = {
   enabled: false,
@@ -14,16 +15,13 @@ async function enforceRetention() {
 
   if (logs.length <= retentionPolicy.maxEntries) return;
 
-  // Remove oldest entries first
   const excess = logs.length - retentionPolicy.maxEntries;
   const trimmed = logs.slice(excess);
 
   await db.set("logs", trimmed);
 }
 
-
 export const log = {
-
   // INTERNAL — CALLED BY MIDDLEWARE
   _setRetention(policy) {
     retentionPolicy = policy;
@@ -33,7 +31,6 @@ export const log = {
   // WRITE LOG (IMMUTABLE)
   // --------------------------------
   async push(req) {
-
     const ua = parseUA(req.headers["user-agent"] || "");
 
     const lastID = (await db.get("last_logID")) ?? 0;
@@ -74,30 +71,22 @@ export const log = {
     });
 
     await db.push("logs", logEntry);
-
-    // ---- Retention Enforcement ----
     await enforceRetention();
   },
 
   // --------------------------------
   // GET LOGS
   // --------------------------------
-  async get(arg) {
-    const logs = (await db.get("logs")) ?? [];
-
-    if (arg === "all") return logs;
-
-    if (typeof arg === "string") {
-      return logs.find(l => l.id === arg) ?? null;
-    }
-
-    return logs;
-  },
-
-  // --------------------------------
-  // FILTERED GET
-  // --------------------------------
   get: {
+    async all() {
+      return (await db.get("logs")) ?? [];
+    },
+
+    async byId(id) {
+      const logs = (await db.get("logs")) ?? [];
+      return logs.find(l => l.id === id) ?? null;
+    },
+
     async filter(filters = {}) {
       const logs = (await db.get("logs")) ?? [];
 
@@ -143,3 +132,6 @@ export const log = {
     await db.set("logs", []);
   }
 };
+
+// Attach query helpers
+log.query = query;
