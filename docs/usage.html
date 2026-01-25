@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Triva — Useage</title>
+    <title>Triva — Testing</title>
     <!-- Icons (Lucide via CDN) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="assets/style.css">
@@ -20,113 +20,608 @@
             <i data-lucide="square-terminal"></i> 
             <span>Installation</span> 
             </a> 
-            <a href="./_" class="nav-item active" data-page="docs"> 
+            <a href="./usage.html" class="nav-item active" data-page="docs"> 
             <i data-lucide="braces"></i> 
             <span>Useage</span> 
             </a> 
-            <a href="./_" class="nav-item" data-page="docs"> 
+            <a href="./examples.html" class="nav-item" data-page="docs"> 
             <i data-lucide="database"></i> 
             <span>Examples</span> 
             </a> 
-            <a href="./_" class="nav-item" data-page="docs"> 
+            <a href="./bugs.html" class="nav-item" data-page="docs"> 
             <i data-lucide="bug"></i> 
             <span>Bugs</span> 
             </a> 
-            <a href="./_" class="nav-item-heart" data-page="docs"> 
+            <a href="./contribute.html" class="nav-item" data-page="docs"> 
             <i data-lucide="heart-handshake"></i> 
             <span>Contribute</span> 
             </a> 
         </nav>
     </aside>
 
-    <main>
-    <h1>Usage</h1>
+    <main id="usage">
+      <h1>Useage</h1>
+
+    <!-- ================================================= -->
+  <!-- CONCEPTUAL OVERVIEW -->
+  <!-- ================================================= -->
+  <section id="concept">
+    <h2>Conceptual Model</h2>
 
     <p>
-        Triva is designed to be framework-agnostic. The same middleware instance can be
-        used with Express, Fastify, or the native Node.js HTTP server. Behavior is consistent
-        across environments.
+      Triva’s middleware sits between the incoming HTTP request and your application
+      logic. Every request passing through it is inspected and normalized into a
+      structured log entry. This happens automatically — no manual logging calls
+      are required.
     </p>
-
-    <h2>Express</h2>
 
     <p>
-        Express applications attach Triva as standard middleware. Triva runs early in the
-        request lifecycle and may short-circuit requests when limits are exceeded.
+      The role of <code>createMiddleware()</code> is to define:
     </p>
 
-    <pre><code>import express from 'express';
-import { createMiddleware } from 'triva';
+    <ul>
+      <li>What data is collected</li>
+      <li>How aggressively detection is performed</li>
+      <li>How logs are retained and accessed</li>
+      <li>Which features are enabled or disabled</li>
+    </ul>
 
-const app = express();
-const middleware = new createMiddleware({ parser: true });
+    <div class="callout callout-info">
+      <strong>Key Principle:</strong> Middleware configuration controls behavior.
+      Runtime interaction is limited to reading or deleting logs.
+    </div>
+  </section>
 
-app.use(middleware);
+        <nav class="toc">
+        <h2>Table of Contents</h2>
+            <ul>
+                <li><a href="#basic-init">Basic Initialization</a></li>
 
-app.get('/', (req, res) => {
-    res.json({
-        throttle: req.triva.throttle,
-        parsed: req.triva.parsed
-    });
+                <li><a href="#configuration">Configuration Object</a></li>
+
+                <li><a href="#options">Option Breakdown</a></li>
+
+                <li><a href="#throttle-options">Throttle Options</a></li>
+
+                <li><a href="#runtime-inputs">Runtime Inputs (Per Request)</a></li>
+
+                <li><a href="#tier-aware-policies">Tier-Aware Policies</a></li>
+
+                <li><a href="#retention">Log Retention</a></li>
+
+                <li><a href="#immutability">Immutability &amp; Guarantees</a></li>
+
+                <li><a href="#log-usage">Logging Model Overview</a>
+                    <ol>
+                        <li><a href="#log-get">log.get()</a>
+                            <ol>
+                                <li><a href="#filters">Available Filters</a>
+                            </ol>
+                        </li>
+                        <li><a href="#log-delete">log.delete()</a></li>
+                        <li><a href="#log-clear">log.clear()</a></li>
+                    </ol>
+                </li>
+
+            </ul>
+        </nav>
+
+  <!-- ================================================= -->
+  <!-- BASIC INITIALIZATION -->
+  <!-- ================================================= -->
+  <section id="basic-init">
+    <h2>Basic Initialization</h2>
+
+    <pre><code class="language-js">import { createMiddleware } from 'triva';
+
+const middleware = createMiddleware({});
+</code></pre>
+
+    <p>
+      Calling <code>createMiddleware()</code> returns a middleware function compatible
+      with any standards-based HTTP framework. An empty configuration enables
+      default behavior, including device detection, OS parsing, browser parsing,
+      and basic bot identification.
+    </p>
+
+    <p>
+      Defaults are intentionally conservative and suitable for most applications
+      without modification.
+    </p>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- CONFIGURATION OBJECT -->
+  <!-- ================================================= -->
+  <section id="configuration">
+    <h2>Configuration Object</h2>
+
+    <p>
+      <code>createMiddleware()</code> accepts a single configuration object. All options
+      are optional and may be combined freely.
+    </p>
+
+    <h3>Example Configuration</h3>
+
+    <pre><code class="language-js">const middleware = new createMiddleware({
+  redirectTraffic: true,
+  retention: {
+    enabled: true,
+    maxEntries: 100000
+  },
+  throttle: {
+    limit: 1500,
+    window_ms: 24 * 60 * 60 * 1000,
+    burst_limit: 25,
+    burst_window_ms: 1000
+  }
 });
+</code></pre>
 
-app.listen(3000);</code></pre>
+  </section>
 
-    <h2>Fastify</h2>
+  <!-- ================================================= -->
+  <!-- OPTION BREAKDOWN -->
+  <!-- ================================================= -->
+  <section id="options">
+    <h2>Option Breakdown</h2>
+
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>redirectTraffic</code></td>
+          <td>boolean</td>
+          <td>Redirect AI agent, Bot, & AI Crawler Traffic automatically</td>
+        </tr>
+        <tr>
+          <td><code>retention</code></td>
+          <td>object</td>
+          <td>Controls log retention behavior</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+        Without retention configuration, logs will be cached until the execution of log.delete() or log.clear()
+    </div>
+  </section>
+  
+  <!-- ================================================= -->
+  <!-- THROTTLE OPTION BREAKDOWN -->
+  <!-- ================================================= -->
+  <section id="throttle-options">
+    <h2>Throttle Options</h2>
+
+    <p>Most applications will only need: <code>limit</code>, <code>window_ms</code>, & <code>burst_limit</code>. Everything else exists for: high-traffic systems, tiered access models, mixed human + automated traffic, & abuse-resistant APIs.</p>
+
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Required?</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>limit</code></td>
+          <td>number</td>
+          <td>-</td>
+          <td>Required</td>
+          <td>Maximum number of requests allowed within the sliding window.</td>
+        </tr>
+        <tr>
+          <td><code>window_ms</code></td>
+          <td>number</td>
+          <td>-</td>
+          <td>Required</td>
+          <td>Duration of the sliding window used to evaluate sustained usage.</td>
+        </tr>
+        <tr>
+          <td><code>burst_limit</code></td>
+          <td>number</td>
+          <td>20</td>
+          <td>Optional</td>
+          <td>Maximum number of requests allowed in the burst window.</td>
+        </tr>
+        <tr>
+          <td><code>burst_window_ms</code></td>
+          <td>number</td>
+          <td>1000</td>
+          <td>Optional</td>
+          <td>Time window used to detect request bursts.</td>
+        </tr>
+        <tr>
+          <td><code>ban_threshold</code></td>
+          <td>number</td>
+          <td>5</td>
+          <td>Optional</td>
+          <td>Number of limit violations required before a temporary ban is applied.</td>
+        </tr>
+        <tr>
+          <td><code>ban_ms</code></td>
+          <td>number</td>
+          <td>24 * 60 * 60 * 1000</td>
+          <td>Optional</td>
+          <td>Duration of the temporary ban once triggered.</td>
+        </tr>
+        <tr>
+          <td><code>violation_decay_ms</code></td>
+          <td>number</td>
+          <td>60 * 60 * 1000</td>
+          <td>Optional</td>
+          <td>Time after which a single violation is automatically removed if no new violations occur. This allows clients to “cool off” over time.</td>
+        </tr>
+        <tr>
+          <td><code>ua_rotation_threshold</code></td>
+          <td>number</td>
+          <td>5</td>
+          <td>Optional</td>
+          <td>Maximum number of distinct User-Agent hashes allowed per IP before requests are restricted.</td>
+        </tr>
+        <tr>
+          <td><code>weight_multiplier</code></td>
+          <td>number</td>
+          <td>1</td>
+          <td>Optional</td>
+          <td>Multiplier applied to the base request weight. Typically used in policy overrides, not global config.</td>
+        </tr>
+        <tr>
+          <td><code>policies</code></td>
+          <td>function</td>
+          <td>-</td>
+          <td>Optional</td>
+          <td>Allows dynamic per-request configuration based on context.</td>
+        </tr>
+        <tr>
+          <td><code>namespace</code></td>
+          <td>string</td>
+          <td>'throttle'</td>
+          <td>Optional</td>
+          <td>Prefix used for all datastore keys to prevent collisions.</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </section>
+
+<!-- ================================================= -->
+  <!-- Runtime Inputs BREAKDOWN -->
+  <!-- ================================================= -->
+  <section id="runtime-inputs">
+    <h2>Runtime Inputs (Per Request)</h2>
+    <p>These are not configuration, but influence behavior:</p>
+
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Input</th>
+          <th>Source</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>ip</code></td>
+          <td><code>req.socket.remoteAddress</code></td>
+        </tr>
+        <tr>
+          <td><code>ua (User Agent)</code></td>
+          <td><code>req.headers['user-agent'</code>]</td>
+        </tr>
+        <tr>
+          <td><code>context</code></td>
+          <td>developer-supplied metadata</td>
+        </tr>
+      </tbody>
+    </table>
+
+  </section>
+
+<!-- ================================================= -->
+  <!-- Tier-Aware Policies -->
+  <!-- ================================================= -->
+  <section id="tier-aware-policies">
+    <h2>Tier-Aware Policies</h2>
 
     <p>
-        Fastify integrations use request hooks. Triva operates synchronously and does not
-        rely on Fastify-specific APIs.
+      Throttle supports dynamic policy resolution per request, enabling differentiated access models without multiple middleware instances.
     </p>
 
-    <pre><code>import Fastify from 'fastify';
-import { createMiddleware } from 'triva';
+    <h3>Example Configuration</h3>
 
-const fastify = Fastify();
-const middleware = new createMiddleware({ throttle: { limit: 1000 } });
+    <pre><code class="language-js">createMiddleware({
+    throttle: {
+        limit: 1000,
+        window_ms: 86400000,
 
-fastify.addHook('onRequest', middleware);
+        policies: ({ context }) => {
+        if (context.tier === 'enterprise') {
+            return {
+            limit: 100000,
+            burst_limit: 200
+            };
+        }
 
-fastify.get('/', async (req, reply) => {
-    return req.triva;
- });
-
-fastify.listen({ port: 3000 });</code></pre>
-
-    <h2>Node.js HTTP Server</h2>
-
-    <p>
-        Triva works directly with the Node.js HTTP module without adapters or wrappers.
-    </p>
-
-    <pre><code>import http from 'http';
-import { createMiddleware } from 'triva';
-
-const middleware = new createMiddleware();
-
-const server = http.createServer((req, res) => {
-    middleware(req, res, () => {
-        res.end(JSON.stringify(req.triva));
-    });
+        if (context.tier === 'pro') {
+            return {
+            limit: 10000
+            };
+        }
+        }
+    }
 });
+</code></pre>
 
-server.listen(3000);</code></pre>
+    <h3>Usage example:</h3>
 
-    <h2>Accessing Runtime Metadata</h2>
+    
+    <pre><code class="language-js">throttle.check(ip, ua, { tier: user.plan });</code></pre>
+
+  </section>
+
+  <!-- ================================================= -->
+  <!-- RETENTION -->
+  <!-- ================================================= -->
+  <section id="retention">
+    <h2>Log Retention</h2>
+
+    <pre><code class="language-js">
+retention: {
+  enabled: true,
+  maxEntries: 50000
+}
+</code></pre>
 
     <p>
-        All runtime decisions are exposed on the request object:
+      Retention settings define how many log entries are stored at any time.
+      When the limit is reached, the oldest entries are removed automatically.
     </p>
-
-    <pre><code>req.triva = {
-    throttle: { restricted, reason },
-    parsed: { os, browser, device, bot },
-    timing: { received_at }
-};</code></pre>
 
     <p>
-        This data is safe to log, expose to clients, or feed into analytics pipelines.
+      This prevents unbounded storage growth while maintaining recent visibility
+      into request activity.
     </p>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- IMMUTABILITY -->
+  <!-- ================================================= -->
+  <section id="immutability">
+    <h2>Immutability & Guarantees</h2>
+
+    <p>
+      Once a request is logged, its data cannot be altered. This ensures
+      consistency and audit reliability across environments.
+    </p>
+
+    <ul>
+      <li>Logs are append-only</li>
+      <li>No update or overwrite operations exist</li>
+      <li>Deletion is explicit and permanent</li>
+    </ul>
+
+    <div class="callout callout-info">
+      This design ensures logs remain trustworthy and deterministic.
+    </div>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- CTA -->
+  <!-- ================================================= -->
+  <section class="cta cta-success">
+    <h2>See It in Action</h2>
+    <p>
+      Framework-specific implementations are covered in the
+      <a href="#">Examples</a> section, including Express,
+      Fastify, and native HTTP servers.
+    </p>
+  </section>
+
+
+    <!-- ================================================= -->
+    <!-- OVERVIEW -->
+    <!-- ================================================= -->
+    <section id="log-usage">
+        <h2>Logging Model Overview</h2>
+
+        <p>
+        Once Triva middleware is installed and mounted, every incoming request is analyzed and
+        logged automatically. This includes device data, operating system, browser details,
+        CPU architecture, and bot / AI detection where applicable.
+        </p>
+
+        <p>
+        The developer-facing surface area is intentionally small. Interaction with logs happens
+        exclusively through:
+        </p>
+
+        <ul>
+        <li><code>log.get()</code> — retrieve logs</li>
+        <li><code>log.clear()</code> — remove all logs</li>
+        <li><code>log.delete()</code> — remove specific log entries</li>
+        </ul>
+
+        <div class="callout callout-info">
+        <strong>Important:</strong> Logs are immutable once written. You may delete logs,
+        but you cannot edit or overwrite existing log records.
+        </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- log.get -->
+    <!-- ================================================= -->
+    <section id="log-get">
+        <h2><i data-lucide="hash" style="vertical-align: middle; padding-bottom: 3px;"></i> log.get()</h2>
+
+        <p>
+        <code>log.get()</code> is used to retrieve stored log entries. It supports three invocation
+        modes: full retrieval, single-entry lookup, and filtered queries.
+        </p>
+
+        <h3>1. Retrieve All Logs</h3>
+
+        <pre><code class="language-js">const logs = await log.get(all);</code></pre>
+
+        <p>
+        Passing <code>all</code> returns every stored log entry. This is useful for analytics dashboards,
+        batch exports, or offline processing.
+        </p>
+
+        <div class="callout callout-warning">
+        <strong>Warning:</strong> Retrieving all logs may be expensive on large datasets.
+        Use filters whenever possible.
+        </div>
+
+        <h3>2. Retrieve a Log by ID</h3>
+
+        <pre><code class="language-js">const entry = await log.get("c8a7f1d2");</code></pre>
+
+        <p>
+        Each log entry is assigned a unique identifier at creation time. Supplying an ID returns
+        a single log object or <code>null</code> if no match exists.
+        </p>
+
+        <h3>3. Filtered Retrieval</h3>
+
+        <pre><code class="language-js">const logs = await log.get.filter({
+    browser: "Chrome",
+    os: "Windows",
+    bot: false
+});
+</code></pre>
+
+        <p>
+        Filtered queries allow you to narrow results based on specific recorded attributes.
+        Multiple filters are combined using logical AND.
+        </p>
+
+        <!-- ================================================= -->
+        <!-- FILTER TABLE -->
+        <!-- ================================================= -->
+        <h3 id="filters">Available Filters</h3>
+
+        <table class="api-table">
+        <thead>
+            <tr>
+            <th>Filter</th>
+            <th>Stored As</th>
+            <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+            <td>CPU Architecture</td>
+            <td><b>String:</b> <code>CPU</code></td>
+            <td>x64, arm, arm64, etc.</td>
+            </tr>
+            <tr>
+            <td>Device</td>
+            <td><b>String:</b> <code>Type</code></td>
+            <td>Derived from UA analysis</td>
+            </tr>
+            <tr>
+            <td>Engine</td>
+            <td><b>String:</b> <code>Type</code></td>
+            <td>Rendering engine</td>
+            </tr>
+            <tr>
+            <td>OS</td>
+            <td><b>String:</b> <code>OS Name</code> / <code>Version</code></td>
+            <td>Windows, macOS, Linux, Android, iOS</td>
+            </tr>
+            <tr>
+            <td>Browser</td>
+            <td><b>String:</b> <code>Name</code> / <code>Version</code> / <code>Major</code></td>
+            <td>Granular browser identification</td>
+            </tr>
+            <tr>
+            <td>AI Bot</td>
+            <td><b>Boolean:</b> <code>True</code> / <code>False</code></td>
+            <td>True if identified as an AI agent</td>
+            </tr>
+            <tr>
+            <td>Bot</td>
+            <td><b>Boolean:</b> <code>True</code> / <code>False</code></td>
+            <td>Traditional crawler or automation</td>
+            </tr>
+            <tr>
+            <td>AI Crawler</td>
+            <td><b>Boolean:</b> <code>True</code> / <code>False</code></td>
+            <td>AI-driven indexing systems</td>
+            </tr>
+        </tbody>
+        </table>
+
+        <div class="callout callout-info">
+        Filters may be combined arbitrarily. Unsupported filter keys are ignored.
+        </div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- log.delete -->
+    <!-- ================================================= -->
+    <section id="log-delete">
+        <h2><i data-lucide="hash" style="vertical-align: middle; padding-bottom: 3px;"></i> log.delete()</h2>
+
+        <pre><code class="language-js">await log.delete("103");</code></pre>
+
+        <p>
+        Deletes a single log entry by ID. This operation is permanent and cannot be undone.
+        </p>
+
+        <p>
+        Deleting logs is commonly used to comply with internal retention policies or
+        remove test data from development environments.
+        </p>
+
+        <div class="callout callout-warning"><strong>Caution:</strong> Deleted logs are removed immediately and irreversibly.</div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- log.clear -->
+    <!-- ================================================= -->
+    <section id="log-clear">
+        <h2><i data-lucide="hash" style="vertical-align: middle; padding-bottom: 3px;"></i> log.clear()</h2>
+
+        <pre><code class="language-js">await log.clear();</code></pre>
+
+        <p>
+        Removes all stored log entries. This operation does not affect middleware configuration
+        and logging will resume automatically on subsequent requests.
+        </p>
+
+        <p>
+        Typical use cases include:
+        </p>
+
+        <ul>
+        <li>Resetting logs during development</li>
+        <li>Pre-deployment cleanup</li>
+        <li>Controlled data purges</li>
+        </ul>
+
+        <div class="callout callout-warning"><strong>Extreme Caution:</strong> This action deletes every log entry in storage.</div>
+    </section>
+
+    <!-- ================================================= -->
+    <!-- CTA -->
+    <!-- ================================================= -->
+    <section class="cta cta-success">
+        <h2>Next Steps</h2>
+        <p>
+        Continue with the <a href="#">Examples</a> page to see real-world usage patterns,
+        or review the <a href="#">Bugs</a> page to help improve Triva’s logging engine.
+        </p>
+    </section>
 
     </main>
 

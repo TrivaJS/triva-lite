@@ -36,6 +36,10 @@ main a:hover {
     background-color: #ffe4e4e1;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 /* Sidebar */
 
 .sidebar {
@@ -152,7 +156,7 @@ main a:hover {
 main {
     margin-left: 280px;
     padding: 40px;
-    max-width: 960px;
+    max-width: 85vw;
 }
 
 main h1 {
@@ -171,6 +175,7 @@ main h2 {
 main p {
     margin-bottom: 15px;
     font-size: 1rem;
+    max-width: 965px;
 }
 
 main ul {
@@ -247,7 +252,7 @@ section {
   display: inline-block;
   margin-top: 1rem;
   font-weight: 500;
-  color: #2563eb;
+  color: #111;
   text-decoration: none;
 }
 
@@ -260,16 +265,24 @@ section {
    ========================= */
 
 .cta-success {
-  background: linear-gradient(
-    180deg,
-    rgba(16, 185, 129, 0.08),
-    rgba(16, 185, 129, 0.03)
-  );
-  border-color: rgba(16, 185, 129, 0.3);
+  background: #e0e0e0a2;
+  border: 0;
 }
 
 .cta-success h2 {
-  color: #065f46;
+  color: #000000;
+  margin-bottom: 0;
+}
+
+.cta-success a {
+    background-color: transparent;
+    padding: 0;
+}
+
+.cta-success a:hover {
+    text-decoration: underline;
+    background-color: transparent;
+    color: #b60000;
 }
 
 .cta-warning {
@@ -314,6 +327,7 @@ section {
 
 .api-table {
   width: 100%;
+  max-width: 1250px;
   border-collapse: collapse;
   margin: 2rem 0;
   font-size: 0.95rem;
@@ -371,4 +385,37 @@ section {
 .callout p {
   margin-bottom: 0;
   font-size: 13px;
+}
+
+.toc {
+  font-size: 0.95rem;
+}
+
+.toc ul {
+  padding: 0;
+  margin: 0;
+  padding-left: 20px;
+}
+
+.toc li {
+  margin: 0.4rem 0;
+}
+
+.toc a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  background-color: transparent;
+  padding: 0;
+  border: 0;
+}
+
+.toc a:hover {
+    text-decoration: underline;
+    background-color: transparent;
+    color: #b60000;
+}
+
+.toc ol {
+    margin-left: 30px;
+    list-style-type: disc
 }
