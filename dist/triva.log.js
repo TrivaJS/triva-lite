@@ -1,51 +1,145 @@
 import { db } from "./triva.db.js";
-import { parseUA } from '@trivajs/ua-parser';
+import { parseUA } from "@trivajs/ua-parser";
+
+let retentionPolicy = {
+  enabled: false,
+  maxEntries: 0
+};
+
+async function enforceRetention() {
+  if (!retentionPolicy.enabled) return;
+  if (!retentionPolicy.maxEntries) return;
+
+  const logs = (await db.get("logs")) ?? [];
+
+  if (logs.length <= retentionPolicy.maxEntries) return;
+
+  // Remove oldest entries first
+  const excess = logs.length - retentionPolicy.maxEntries;
+  const trimmed = logs.slice(excess);
+
+  await db.set("logs", trimmed);
+}
+
 
 export const log = {
 
-    async push(req, res) {
+  // INTERNAL — CALLED BY MIDDLEWARE
+  _setRetention(policy) {
+    retentionPolicy = policy;
+  },
 
-        // ---- User Agent Parsing ----
-        const data = parseUA(req.headers["user-agent"])
-        console.log(data)
+  // --------------------------------
+  // WRITE LOG (IMMUTABLE)
+  // --------------------------------
+  async push(req) {
 
-        // Analytics
+    const ua = parseUA(req.headers["user-agent"] || "");
 
-        // Log ID
-        const logID = await db.get("loast_logID").then( async () => {
-            await db.add('loast_logID', 1)
-        })
+    const lastID = (await db.get("last_logID")) ?? 0;
+    const id = lastID + 1;
+    await db.set("last_logID", id);
 
-        async function create_log(){
-        const logEntry = {
-            id: logID+1,
-            time: new Date().toLocaleString(),
-            userData: {
-                ip: req.socket?.remoteAddress,
-            },
-            requestData: {
-                method: req.method,
-                url: req.url,
-            }
+    const logEntry = Object.freeze({
+      id: id.toString(),
+      timestamp: Date.now(),
+
+      ip: req.socket?.remoteAddress ?? null,
+
+      cpu: ua.cpu?.architecture ?? null,
+      device: ua.device?.type ?? "desktop",
+      engine: ua.engine?.name ?? null,
+
+      os: {
+        name: ua.os?.name ?? null,
+        version: ua.os?.version ?? null
+      },
+
+      browser: {
+        name: ua.browser?.name ?? null,
+        version: ua.browser?.version ?? null,
+        major: ua.browser?.major ?? null
+      },
+
+      bot: ua.isBot ?? false,
+      aiBot: ua.isAIBot ?? false,
+      aiCrawler: ua.isAICrawler ?? false,
+
+      request: {
+        method: req.method,
+        url: req.url
+      },
+
+      rawUA: req.headers["user-agent"] ?? null
+    });
+
+    await db.push("logs", logEntry);
+
+    // ---- Retention Enforcement ----
+    await enforceRetention();
+  },
+
+  // --------------------------------
+  // GET LOGS
+  // --------------------------------
+  async get(arg) {
+    const logs = (await db.get("logs")) ?? [];
+
+    if (arg === "all") return logs;
+
+    if (typeof arg === "string") {
+      return logs.find(l => l.id === arg) ?? null;
+    }
+
+    return logs;
+  },
+
+  // --------------------------------
+  // FILTERED GET
+  // --------------------------------
+  get: {
+    async filter(filters = {}) {
+      const logs = (await db.get("logs")) ?? [];
+
+      return logs.filter(entry => {
+        for (const [key, value] of Object.entries(filters)) {
+          if (!(key in entry)) continue;
+
+          const stored = entry[key];
+
+          if (typeof stored === "object" && stored !== null) {
+            if (
+              typeof value === "object" &&
+              !Object.entries(value).every(
+                ([k, v]) => stored[k] === v
+              )
+            ) return false;
+          } else {
+            if (stored !== value) return false;
+          }
         }
-        await db.push('logs', logEntry);
-        return;
+        return true;
+      });
     }
+  },
 
-    await create_log() // Requires rework with automatic redirect development - Very early log setup
+  // --------------------------------
+  // DELETE SINGLE LOG
+  // --------------------------------
+  async delete(id) {
+    const logs = (await db.get("logs")) ?? [];
+    const filtered = logs.filter(l => l.id !== id);
 
-    },
-    
-    async get(id) {
+    if (filtered.length === logs.length) return false;
 
-    },
-    
-    async remove(id) {
+    await db.set("logs", filtered);
+    return true;
+  },
 
-    },
-
-    async filter() {
-
-    }
-
-}
+  // --------------------------------
+  // CLEAR ALL LOGS
+  // --------------------------------
+  async clear() {
+    await db.set("logs", []);
+  }
+};

@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -87,10 +88,6 @@
 
                 <li><a href="#tier-aware-policies">Tier-Aware Policies</a></li>
 
-                <li><a href="#retention">Log Retention</a></li>
-
-                <li><a href="#immutability">Immutability &amp; Guarantees</a></li>
-
                 <li><a href="#log-usage">Logging Model Overview</a>
                     <ol>
                         <li><a href="#log-get">log.get()</a>
@@ -102,7 +99,9 @@
                         <li><a href="#log-clear">log.clear()</a></li>
                     </ol>
                 </li>
-
+                <li><a href="#retention">Log Retention</a></li>
+                <li><a href="#immutability">Immutability &amp; Guarantees</a></li>
+                
             </ul>
         </nav>
 
@@ -114,7 +113,12 @@
 
     <pre><code class="language-js">import { createMiddleware } from 'triva';
 
-const middleware = createMiddleware({});
+const middleware = new createMiddleware({
+  throttle: {
+    limit: 1000,
+    window_ms: 86400000,
+  }
+});
 </code></pre>
 
     <p>
@@ -369,52 +373,6 @@ const middleware = createMiddleware({});
   </section>
 
   <!-- ================================================= -->
-  <!-- RETENTION -->
-  <!-- ================================================= -->
-  <section id="retention">
-    <h2>Log Retention</h2>
-
-    <pre><code class="language-js">
-retention: {
-  enabled: true,
-  maxEntries: 50000
-}
-</code></pre>
-
-    <p>
-      Retention settings define how many log entries are stored at any time.
-      When the limit is reached, the oldest entries are removed automatically.
-    </p>
-
-    <p>
-      This prevents unbounded storage growth while maintaining recent visibility
-      into request activity.
-    </p>
-  </section>
-
-  <!-- ================================================= -->
-  <!-- IMMUTABILITY -->
-  <!-- ================================================= -->
-  <section id="immutability">
-    <h2>Immutability & Guarantees</h2>
-
-    <p>
-      Once a request is logged, its data cannot be altered. This ensures
-      consistency and audit reliability across environments.
-    </p>
-
-    <ul>
-      <li>Logs are append-only</li>
-      <li>No update or overwrite operations exist</li>
-      <li>Deletion is explicit and permanent</li>
-    </ul>
-
-    <div class="callout callout-info">
-      This design ensures logs remain trustworthy and deterministic.
-    </div>
-  </section>
-
-  <!-- ================================================= -->
   <!-- CTA -->
   <!-- ================================================= -->
   <section class="cta cta-success">
@@ -483,7 +441,7 @@ retention: {
 
         <h3>2. Retrieve a Log by ID</h3>
 
-        <pre><code class="language-js">const entry = await log.get("c8a7f1d2");</code></pre>
+        <pre><code class="language-js">const entry = await log.get("1051");</code></pre>
 
         <p>
         Each log entry is assigned a unique identifier at creation time. Supplying an ID returns
@@ -535,7 +493,7 @@ retention: {
             </tr>
             <tr>
             <td>OS</td>
-            <td><b>String:</b> <code>OS Name</code> / <code>Version</code></td>
+            <td><b>String:</b> <code>Name</code> / <code>Version</code></td>
             <td>Windows, macOS, Linux, Android, iOS</td>
             </tr>
             <tr>
@@ -612,6 +570,96 @@ retention: {
         <div class="callout callout-warning"><strong>Extreme Caution:</strong> This action deletes every log entry in storage.</div>
     </section>
 
+         <!-- ================================================= -->
+  <!-- RETENTION -->
+  <!-- ================================================= -->
+  <section id="retention">
+    <h2>Log Retention</h2>
+
+    <pre><code class="language-js">retention: {
+  enabled: true,
+  maxEntries: 50000
+}
+</code></pre>
+
+    <p>
+      Retention settings define how many log entries are stored at any time.
+      When the limit is reached, the oldest entries are removed automatically.
+    </p>
+
+    <p>
+      This prevents unbounded storage growth while maintaining recent visibility
+      into request activity.
+    </p>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- OPTION BREAKDOWN -->
+  <!-- ================================================= -->
+  <section id="options">
+    <h2>Retention Options</h2>
+
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Option</th>
+          <th>Type</th>
+          <th>Defualt</th>
+          <th>Requird?</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>enabled</code></td>
+          <td>boolean</td>
+          <td>enabled</td>
+          <td>Requird</td>
+          <td>Whether logs are retained</td>
+        </tr>
+        <tr>
+          <td><code>maxEntries</code></td>
+          <td>number</td>
+          <td>100000</td>
+          <td>Optional</td>
+          <td>Limit the log cache's entries</td>
+        </tr>
+        <tr>
+          <td><code>retainRes</code></td>
+          <td>boolean</td>
+          <td>false</td>
+          <td>Optional</td>
+          <td>Retain the response content. It may greatly increase the weight of the cache itself.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout callout-warning">
+        Without retention configuration, logs will be cached until the execution of log.delete() or log.clear()
+    </div>
+  </section>
+
+  <!-- ================================================= -->
+  <!-- IMMUTABILITY -->
+  <!-- ================================================= -->
+  <section id="immutability">
+    <h2>Immutability & Guarantees</h2>
+
+    <p>
+      Once a request is logged, its data cannot be altered. This ensures
+      consistency and audit reliability across environments.
+    </p>
+
+    <ul>
+      <li>Logs are append-only</li>
+      <li>No update or overwrite operations exist</li>
+      <li>Deletion is explicit and permanent</li>
+    </ul>
+
+    <p>This design ensures logs remain trustworthy and deterministic.</p>
+
+  </section>
+
     <!-- ================================================= -->
     <!-- CTA -->
     <!-- ================================================= -->
@@ -626,6 +674,5 @@ retention: {
     </main>
 
     <script>lucide.createIcons();</script>
-
 </body>
 </html>

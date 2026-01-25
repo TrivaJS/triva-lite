@@ -5,18 +5,21 @@ const app = express();
 
 /* ---------------- Triva Middleware ---------------- */
 
-app.use(
-  createMiddleware({
-    rateLimit: {
-      limit: 5,            // 5 requests
-      window_ms: 10_000,   // per 10 seconds
-      burst_limit: 3,      // fast burst
-      burst_window_ms: 1_000,
-      ban_threshold: 3,    // auto-ban after 3 violations
-      ban_ms: 60_000       // 1 minute ban
-    }
-  })
-);
+const middleware = new createMiddleware({
+  redirectTraffic: true,
+  retention: {
+    enabled: true,
+    maxEntries: 100000
+  },
+  throttle: {
+    limit: 1500,
+    window_ms: 24 * 60 * 60 * 1000,
+    burst_limit: 25,
+    burst_window_ms: 1000
+  }
+});
+
+app.use(middleware);
 
 /* ---------------- Test Routes ---------------- */
 

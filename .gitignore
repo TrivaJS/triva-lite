@@ -1,5 +1,5 @@
-/test/node_modules
-test/package.json
-test/triva.db
 /node_modules
+/node_modules
+/test/node_modules
 package-lock.json
+test/package.json
