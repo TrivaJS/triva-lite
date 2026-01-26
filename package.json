@@ -16,5 +16,12 @@
   "dependencies": {
     "@trivajs/cache": "^1.1.0",
     "@trivajs/ua-parser": "^1.2.0"
-  }
+  },
+  "files": [
+    "README.md",
+    "LICENSE",
+    "index.js",
+    "index.d.ts",
+    "lib/"
+  ]
 }
