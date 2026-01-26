@@ -16,3 +16,5 @@ examples/logs/package.json
 examples/express/development/package.json
 examples/express/production/package.json
 examples/express/development/triva.db
+.npm.txt
+.npm.md
