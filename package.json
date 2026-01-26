@@ -1,16 +1,20 @@
 {
   "name": "triva",
   "version": "1.0.0",
-  "description": "",
+  "description": "Triva is a developer-centric toolkit providing robust request logging and intelligent middleware controls for modern web applications & API's.",
   "main": "index.js",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "postinstall": "node ./dist/module-type.js"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@trivajs/cache": "^1.1.0",
+    "@trivajs/ua-parser": "^1.2.0"
+  }
 }

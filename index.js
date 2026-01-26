@@ -6,4 +6,5 @@
 
 'use strict';
 
-export { createMiddleware } from './dist/triva.main.js';
+export { createMiddleware } from './lib/triva.main.js';
+export { log } from './lib/triva.log.js';
