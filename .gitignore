@@ -11,3 +11,8 @@ examples/express/package.json
 /examples/node-http/node_modules
 examples/node-http/package.json
 examples/logs/package.json
+/examples/express/development/node_modules
+/examples/express/production/node_modules
+examples/express/development/package.json
+examples/express/production/package.json
+examples/express/development/triva.db
