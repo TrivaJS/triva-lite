@@ -1,7 +1,7 @@
 {
-  "name": "triva",
+  "name": "triva-lite",
   "version": "1.0.0",
-  "description": "Triva is a developer-centric toolkit providing robust request logging and intelligent middleware controls for modern web applications & API's.",
+  "description": "Triva Lite is a developer-centric toolkit providing robust request logging and intelligent middleware controls for modern web applications & API's.",
   "main": "index.js",
   "directories": {
     "lib": "lib"
